@@ -1,0 +1,170 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+ /* 定义滚动条的样式 */
+ ::-webkit-scrollbar {
+  width: 0; /* 滚动条宽度 */
+}
+
+/* 定义滚动条轨道的样式 */
+::-webkit-scrollbar-track {
+  background-color: #f1f1f100; /* 滚动条轨道背景色 */
+}
+
+/* 定义滚动条滑块的样式 */
+::-webkit-scrollbar-thumb {
+  background-color: #45454548; /* 滚动条滑块颜色 */
+  border-radius: 5px; /* 滑块圆角 */
+}
+
+/* 鼠标悬停在滚动条上时的样式 */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* 鼠标悬停时滑块颜色 */
+}
+
+/* 水平滚动条样式 */
+::-webkit-scrollbar-horizontal {
+  height: 10px; /* 水平滚动条高度 */
+}
+
+/* 垂直滚动条样式 */
+::-webkit-scrollbar-vertical {
+  width: 10px; /* 垂直滚动条宽度 */
+}
+:root {
+  background-color: transparent !important;
+}
+html {
+  background-color: transparent !important;
+}
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: transparent;
+
+}
+
+#app {
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* background: #edc0bf; */
+  /* background: linear-gradient(90deg, #edc0bfd2 0,#c4caefd5 58%); */
+  background-color: rgba(0, 0, 0, 0.911);
+  /* backdrop-filter: blur(20px); */
+  user-select: none;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*  */
+.icons-wrapper {
+  /* padding: 10%; */
+  width: 80%;
+  height: 80%;
+  overflow: scroll;
+  background-color: transparent;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 120px)); 
+  grid-template-rows: repeat(5, minmax(100px, 120px)); 
+  gap: 30px; /* 固定间距 */
+  box-sizing: border-box;
+  justify-content: center;
+  /* background-color: violet; */
+}
+
+.icon {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 20px;
+  color: white;
+  border: 1px solid #00000000;
+  padding: 10px;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease; /* 添加过渡效果 */
+
+}
+.icon:hover {
+  border: 1px solid #8b88884e;
+  background-color: rgba(111, 111, 111, 0.409);
+}
+.icon .icon-image {
+  padding: 10px;
+  width: 80px;
+  height: 80px;
+}
+.icon .icon-name {
+  font-size: 12px;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  /* background-color: violet; */
+  /* text-overflow: ellipsis; */
+}
+.button {
+  /* position: absolute; */
+  width: 40px;
+  height: 40px;
+  border-radius: 100%;
+  padding: 10px;
+  background-color: rgb(74, 74, 74);
+}
+.button:hover {
+  background-color: rgb(111, 111, 111);
+}
+/* .close-button {
+  right: 40px;
+  top: 40px;
+}
+.setting-button {
+  left: 40px;
+  top: 40px;
+} */
+
+/* options-bar */
+#options-bar {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 100px;
+  width: 8px;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* padding: 50px 0 ; */
+}
+
+#options-bar:hover {
+  /* margin-left: -10px;  */
+  margin-bottom: 100px; /* 调整右边距 */
+}
+
+#options-bar .item {
+  border-radius: 5px;
+  background-color: rgba(94, 94, 94, 0.589);
+  transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
+  width: 100%;
+  height: 50%;
+}
+
+#options-bar:hover .item {
+  opacity: 1; /* 悬停时显示 */
+  transform: rotateZ(100deg);
+}

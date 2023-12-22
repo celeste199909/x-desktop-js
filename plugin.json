@@ -1,0 +1,19 @@
+{
+    "preload": "preload.js",
+    "logo": "./assets/logo.png",
+    "platform": ["win32"],
+    "development": {
+      "main": "http://localhost:5173/index.html"
+    },
+    "features": [
+      {
+        "code": "x",
+        "explain": "随机唯一值",  
+        "icon": "./assets/logo.png",
+        "platform": ["win32"],
+        "cmds": [
+          "infinity"
+        ]
+      }
+    ]
+  }
