@@ -1,18 +1,19 @@
+
 {
+    "main":"index.html",
     "preload": "preload.js",
-    "logo": "./assets/logo.png",
+    "logo": "./assets/x-desktop.png",
     "platform": ["win32"],
     "development": {
       "main": "http://localhost:5173/index.html"
     },
     "features": [
       {
-        "code": "x",
-        "explain": "随机唯一值",  
-        "icon": "./assets/logo.png",
+        "code": "desktop",
+        "icon": "./assets/x-desktop-rounded.png",
         "platform": ["win32"],
         "cmds": [
-          "infinity"
+          "X桌面"
         ]
       }
     ]

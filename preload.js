@@ -1,11 +1,9 @@
 // 开发者可以暴露自定义 API 供后加载脚本使用
 // preload.js 中使用 nodejs
-const { globalShortcut } = require("electron");
-
 const { ipcRenderer } = require("electron");
 
-function createDeskWindow() {
-  const ubWindow = utools.createBrowserWindow(
+function createDesktopWindow() {
+  desktopWindow = utools.createBrowserWindow(
     "./index/index.html",
     {
       show: false,
@@ -14,47 +12,59 @@ function createDeskWindow() {
         // devTools: true,
         preload: "./index/preload.js",
       },
-      // menuBarVisible: false,
       frame: false,
       transparent: true,
       backgroundColor: "#00000000",
-      alwaysOnTop: false,
+      alwaysOnTop: true,
       resizable: false,
+      movable: false,
+      fullscreen: true,
+      focusable: true,
+      skipTaskbar: true,
     },
-    () => {
+    function () {
+      ipcRenderer.sendTo(
+        desktopWindow.webContents.id,
+        "init",
+        desktopWindow.webContents.id
+      );
       utools.hideMainWindow();
-      // 显示
-      ubWindow.show();
-      // 置顶
-      ubWindow.setAlwaysOnTop(true);
-      // 窗口全屏
-      ubWindow.setFullScreen(true);
+      ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
+      desktopWindow.show();
+   
+      // desktopWindow.webContents.openDevTools();
       // 开发者工具
-      ubWindow.webContents.openDevTools();
-      // 向子窗口传递数据
-      ubWindow.webContents.send("init", ubWindow.webContents.id);
-      // 神秘代码 大坑
-      for (var i = 1; i <= 5; i++) {
-        setTimeout(
-          () => ipcRenderer.sendTo(ubWindow.webContents.id, "init"),
-          i * 200
-        );
-      }
       // 监听子窗口隐藏事件
-      ipcRenderer.on("hide", (e, data) => {
-        ubWindow.hide();
+      ipcRenderer.on("hideDesktop", (e, data) => {
+        desktopWindow.hide();
+        // utools.outPlugin()
+        // desktopWindow.minimize();
       });
-     
+      desktopWindow.on('show', () => {
+        // 在窗口关闭时执行一些操作
+        desktopWindow.focus()
+    });
+      // 监听子窗口关闭事件
+      // ipcRenderer.on("close", (e, data) => {
+      //   desktopWindow.close();
+      // });
     }
   );
-  return ubWindow;
+  return desktopWindow;
 }
-createDeskWindow();
 
-// app.on('will-quit', () => {
-//   // 注销快捷键
-//   globalShortcut.unregister('Shift+X')
+let desktopWindow = null;
+if (!desktopWindow) {
+  desktopWindow = createDesktopWindow();
+}
 
-//   // 注销所有快捷键
-//   globalShortcut.unregisterAll()
-// })
+utools.onPluginEnter(({ code, type, payload, option }) => {
+  if (!desktopWindow) {
+    desktopWindow = createDesktopWindow();
+  } else {
+    utools.hideMainWindow();
+    ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
+    desktopWindow.show();
+
+  }
+});

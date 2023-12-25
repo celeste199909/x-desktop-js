@@ -4,16 +4,49 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="index.css" />
-    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
-    <title>X Desktop</title>
+    <!-- 引入默认主题样式表 -->
+    <link rel="stylesheet" href="./theme/theme-dark.css" id="theme-style" />
+    <script src="../js/jquery-3.7.1.min.js"></script>
+    <script src="../js/pinyin-pro.js"></script>
+    <title>X桌面</title>
   </head>
   <body>
     <div id="app" class="">
-      <div id="options-bar">
-        <div class="item">a</div>
-        <div class="item">b</div>
+      <!-- 侧边栏 -->
+      <div id="sidebar-wrapper">
+        <div id="indicate"></div>
+        <div id="sidebar">
+          <div class="setting">设置</div>
+          <!-- 主题 -->
+          <div class="setting-item theme">
+            <div class="setting-item-name">主题</div>
+            <div class="options">
+              <div id="dark-theme" class="option">暗色</div>
+              <div id="light-theme" class="option">亮色</div>
+            </div>
+          </div>
+          <!-- 透明度 -->
+          <!-- <div class="setting-item bg-transparency">
+            <div class="setting-item-name">背景不透明度</div>
+            <div class="options">
+              <input
+                type="range"
+                min="0.9"
+                max="1"
+                step="0.01"
+                value="1"
+                id="bg-transparency-slider"
+              />
+            </div>
+          </div> -->
+        </div>
+      </div>
+      <!-- 按下按钮指示器 -->
+      <div id="keypress-indicate">
       </div>
     </div>
-    <script src="renderer.js"></script>
+    <script type="module" src="renderer.js"></script>
+    <script>
+    </script>
   </body>
 </html>

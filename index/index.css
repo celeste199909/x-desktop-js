@@ -3,8 +3,8 @@
   margin: 0;
   box-sizing: border-box;
 }
- /* 定义滚动条的样式 */
- ::-webkit-scrollbar {
+/* 定义滚动条的样式 */
+::-webkit-scrollbar {
   width: 0; /* 滚动条宽度 */
 }
 
@@ -45,18 +45,19 @@ body {
   box-sizing: border-box;
   overflow: hidden;
   background-color: transparent;
-
 }
 
+/* 应用 */
 #app {
-  background-color: transparent;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
   /* background: #edc0bf; */
   /* background: linear-gradient(90deg, #edc0bfd2 0,#c4caefd5 58%); */
-  background-color: rgba(0, 0, 0, 0.911);
+  background-color: var(--bg-color);
+  /* transition: background-color 0.3s ease, opacity 2s ease; */
+  color: var(--text-color);
   /* backdrop-filter: blur(20px); */
   user-select: none;
   width: 100vw;
@@ -66,21 +67,45 @@ body {
   justify-content: center;
   align-items: center;
 }
+@keyframes show {
+  0% {
+    opacity: 0;
+    /* transform: scale(0); */
+    /* background-color: #00000000; */
+  }
+  100% {
+    opacity: 1;
+    /* transform: scale(1); */
+    /* background-color: var(--bg-color); */
+  }
+}
 
-/*  */
+@keyframes hide {
+  0% {
+    opacity: 1;
+    /* transform: translateY(0) scale(1); */
+  }
+  100% {
+    opacity: 0;
+    /* transform: translateY(300px) scale(0); */
+  }
+}
+
+/* 图标 */
 .icons-wrapper {
   /* padding: 10%; */
-  width: 80%;
-  height: 80%;
+  width: 85%;
+  height: 85%;
   overflow: scroll;
   background-color: transparent;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 120px)); 
-  grid-template-rows: repeat(5, minmax(100px, 120px)); 
+  grid-template-columns: repeat(auto-fit, minmax(100px, 120px));
+  grid-template-rows: repeat(5, minmax(100px, 120px));
   gap: 30px; /* 固定间距 */
   box-sizing: border-box;
   justify-content: center;
   /* background-color: violet; */
+  opacity: 0.9;
 }
 
 .icon {
@@ -91,80 +116,172 @@ body {
   justify-content: center;
   align-items: center;
   border-radius: 20px;
-  color: white;
-  border: 1px solid #00000000;
-  padding: 10px;
+  /* color: white; */
+  border: 2px solid #00000000;
+  padding: 5px;
   box-sizing: border-box;
-  transition: background-color 0.3s ease; /* 添加过渡效果 */
-
+  transition: background-color 0.5s ease, opacity 0.6s ease; /* 添加过渡效果 */
 }
 .icon:hover {
-  border: 1px solid #8b88884e;
-  background-color: rgba(111, 111, 111, 0.409);
+  border: 2px solid var(--icon-border-color);
+  background-color: var(--icon-hover-bg-color);
 }
 .icon .icon-image {
-  padding: 10px;
-  width: 80px;
-  height: 80px;
+  padding: 5px;
+  width: 60px;
+  height: 60px;
 }
 .icon .icon-name {
   font-size: 12px;
   text-align: center;
   width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
   /* background-color: violet; */
   /* text-overflow: ellipsis; */
+  display: -webkit-box; /* 设置为 flex 或者其他布局方式 */
+  -webkit-box-orient: vertical; /* 设置为垂直方向，表示从上到下显示 */
+  overflow: hidden;
+  -webkit-line-clamp: 1; /* 控制显示行数为 2 行 */
+  /* background-color: aquamarine; */
 }
-.button {
-  /* position: absolute; */
-  width: 40px;
-  height: 40px;
-  border-radius: 100%;
-  padding: 10px;
-  background-color: rgb(74, 74, 74);
+/* 搜索目标图标 */
+.search-target {
+  border: 2px solid var(--icon-border-color);
+  background-color: var(--icon-hover-bg-color);
 }
-.button:hover {
-  background-color: rgb(111, 111, 111);
+/* 非搜索目标 */
+.non-search-target {
+  /* 灰色滤镜 */
+  /* filter: grayscale(50%); */
+  /* 半透明滤镜 */
+  /* filter: opacity(0.5); */
+  opacity: 0.5;
 }
-/* .close-button {
-  right: 40px;
-  top: 40px;
-}
-.setting-button {
-  left: 40px;
-  top: 40px;
-} */
 
-/* options-bar */
-#options-bar {
+/* 选中第一个图标 */
+.search-target-first {
+  border: 2px solid var(--theme-color);
+  background-color: rgba(123, 163, 238, 0.402);
+}
+
+/* 侧边栏 */
+/* 侧边栏容器 */
+#sidebar-wrapper {
+  /* background-color: aqua; */
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+}
+
+/* 侧边栏 */
+#sidebar {
   position: absolute;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 100px;
-  width: 8px;
-  
+  left: 10px;
+  top: 15px;
+  bottom: 15px;
+  width: 300px;
+  background-color: var(--sidebar-bg-color);
+  transition: background-color 0.9s ease; /* 添加过渡效果 */
+  border-radius: 20px;
+  /* color: rgb(129, 129, 129); */
+  padding: 0;
   display: flex;
   flex-direction: column;
+  box-sizing: content-box;
+  padding: 20px;
+  transform: translateX(-110%);
+  transition: transform 0.3s ease; /* 添加过渡效果 */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--sidebar-border-color);
+}
+#sidebar-wrapper:hover #sidebar {
+  transform: translateX(0);
+}
+/* 侧边栏指示器 */
+#sidebar-wrapper #indicate {
+  position: absolute;
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 5px;
+  background-color: var(--sidebar-indicate-color);
+  transition: height 0.6s ease; /* 添加过渡效果 */
+  width: 6px;
+  height: 80px;
+}
+#sidebar-wrapper:hover #indicate {
+  height: 0;
+}
+
+/* 设置的标题 */
+.setting {
+  display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  /* padding: 50px 0 ; */
+  margin-bottom: 20px;
+  font-weight: 600;
+  font-size: 20px;
+}
+.setting-item {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+}
+/* 设置的名称 */
+.setting-item-name {
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 16px;
+}
+/* 设置的选项容器 */
+.options {
+  /* display: none; */
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  /* align-items: center;  */
+}
+.option {
+  padding: 10px;
+  border-radius: 10px;
+}
+.option:hover {
+  background-color: var(--icon-hover-bg-color);
 }
 
-#options-bar:hover {
-  /* margin-left: -10px;  */
-  margin-bottom: 100px; /* 调整右边距 */
+/* 背景不透明度 */
+#bg-transparency-slider {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px;
+  outline: none;
 }
 
-#options-bar .item {
-  border-radius: 5px;
-  background-color: rgba(94, 94, 94, 0.589);
-  transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
-  width: 100%;
-  height: 50%;
-}
-
-#options-bar:hover .item {
-  opacity: 1; /* 悬停时显示 */
-  transform: rotateZ(100deg);
+/* 按下按钮指示器 */
+#keypress-indicate {
+  display: none;
+  /* visibility: hidden; */
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 10px;
+  background-color: var(--sidebar-indicate-color);
+  border: 1px solid var(--sidebar-border-color);
+  transition: display 0.6s ease; /* 添加过渡效果 */
+  /* width: 80px;
+  height: 6px; */
+  padding: 0 30px;
+  font-size: 20px;
+  /* 文字左右间隔增大一点 */
+  letter-spacing: 1px;
+  height: 50px;
+  line-height: 50px;
+  backdrop-filter: blur(10px);
 }

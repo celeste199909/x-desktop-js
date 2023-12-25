@@ -1,0 +1,25 @@
+/* theme-light.css */
+
+:root {
+  --theme-color: #0067c0;
+  /* 背景和文字 */
+  --bg-transparency:1;
+  --bg-color: rgb(255, 255, 255, var(--bg-transparency));
+  --text-color: #666666;
+  /* 图标 */
+  --icon-border-color: #dfdfdf4e;
+  --icon-hover-bg-color: rgba(222, 222, 222, 0.637);
+  /* 侧边栏 */
+  --sidebar-bg-color: rgba(255, 255, 255, 0.8);
+  --sidebar-border-color: rgb(235, 235, 235);
+  --sidebar-indicate-color: rgb(235, 235, 235);
+
+}
+/* 应用 */
+#app {
+  background: linear-gradient(
+    90deg,
+    hsla(1, 60%, 84%, var(--bg-transparency)) 0,
+    rgb(195, 201, 239, var(--bg-transparency))
+  ) !important;
+}

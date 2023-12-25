@@ -1,0 +1,17 @@
+/* theme-dark.css */
+
+:root {
+  /* 主题色 */
+  --theme-color: #0067c0;
+  /* 背景和文字 */
+  --bg-transparency: 0.95;
+  --bg-color: rgba(0, 0, 0, var(--bg-transparency));
+  --text-color: #e3e3e3;
+  /* 图标 */
+  --icon-border-color: #8b88884e;
+  --icon-hover-bg-color: rgba(111, 111, 111, 0.409);
+  /* 侧边栏 */
+  --sidebar-bg-color: rgba(49, 49, 49, 0.836);
+  --sidebar-border-color: #706e6e8b;
+  --sidebar-indicate-color: rgba(94, 94, 94, 0.589);
+}
