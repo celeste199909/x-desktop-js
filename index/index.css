@@ -159,8 +159,8 @@ body {
   opacity: 0.5;
 }
 
-/* 选中第一个图标 */
-.search-target-first {
+/* 选中的图标 */
+.selected-target {
   border: 2px solid var(--theme-color);
   background-color: rgba(123, 163, 238, 0.402);
 }

@@ -30,7 +30,7 @@ function createDesktopWindow() {
       );
       showDesktop(desktopWindow);
 
-      // desktopWindow.webContents.openDevTools();
+      desktopWindow.webContents.openDevTools();
       // 开发者工具
       // 监听子窗口隐藏事件
       ipcRenderer.on("hideDesktop", (e, data) => {

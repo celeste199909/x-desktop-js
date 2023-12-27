@@ -1,7 +1,7 @@
 // utils.js
 
 // 函数用于检测字符串是中文还是英文
-function StrContainsChinese(str) {
+function strContainsChinese(str) {
   // 检查字符串中是否有中文字符
   const containsChinese = /[\u4e00-\u9fff]/.test(str);
   return containsChinese;
@@ -17,6 +17,4 @@ function extractInitials(str) {
 }
 
 // 导出函数，以便其他文件可以引入并使用
-// module.exports = StrContainsChinese;
-export { StrContainsChinese, extractInitials };
-// import { StrContainsChinese } from '../js/utils.js';
+export { strContainsChinese, extractInitials };

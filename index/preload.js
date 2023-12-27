@@ -54,11 +54,8 @@ window.getDesktopIcons = function (callback) {
       ipcRenderer.sendTo(winId, "hideDesktop");
     }, 300);
   };
-  // 关闭窗口
-  // window.closeDesk = function () {
-  //   ipcRenderer.sendTo(winId, "close");
-  // };
 
+  // 播放动画
   ipcRenderer.on("showDesktop", (e) => {
     const root = document.querySelector("html");
     root.style.animation = "show 0.3s linear forwards";
