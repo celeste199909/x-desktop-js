@@ -28,43 +28,53 @@ function createDesktopWindow() {
         "init",
         desktopWindow.webContents.id
       );
-      utools.hideMainWindow();
-      ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
-      desktopWindow.show();
-   
+      showDesktop(desktopWindow);
+
       // desktopWindow.webContents.openDevTools();
       // 开发者工具
       // 监听子窗口隐藏事件
       ipcRenderer.on("hideDesktop", (e, data) => {
         desktopWindow.hide();
-        // utools.outPlugin()
-        // desktopWindow.minimize();
       });
-      desktopWindow.on('show', () => {
-        // 在窗口关闭时执行一些操作
-        desktopWindow.focus()
-    });
-      // 监听子窗口关闭事件
-      // ipcRenderer.on("close", (e, data) => {
-      //   desktopWindow.close();
-      // });
     }
   );
   return desktopWindow;
 }
+// utools.setExpendHeight(0);
 
 let desktopWindow = null;
 if (!desktopWindow) {
   desktopWindow = createDesktopWindow();
 }
-
+// 监听插件进入事件
 utools.onPluginEnter(({ code, type, payload, option }) => {
+  // utools.setExpendHeight(0);
+
   if (!desktopWindow) {
     desktopWindow = createDesktopWindow();
   } else {
-    utools.hideMainWindow();
-    ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
-    desktopWindow.show();
-
+    showDesktop(desktopWindow);
   }
 });
+
+// 打开链接
+window.openUrl = function (url) {
+  utools.shellOpenExternal(url);
+};
+
+// 显示桌面
+function showDesktop(desktopWindow) {
+  if (!desktopWindow) {
+
+    desktopWindow = createDesktopWindow();
+  } else {
+    // 隐藏主窗口
+    utools.hideMainWindow();
+    // utools.removeSubInput();
+    // 通知子窗口显示, 播放动画
+    ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
+    // 显示子窗口
+    desktopWindow.show();
+    // utools.simulateMouseClick();
+  }
+}

@@ -3,6 +3,7 @@
 const { readdir, realpathSync } = require("fs");
 const { ipcRenderer } = require("electron");
 
+
 // 获取桌面图标信息
 window.getDesktopIcons = function (callback) {
   const desktopIcons = [];
@@ -34,6 +35,7 @@ window.getDesktopIcons = function (callback) {
 };
 
 (function () {
+
   window.winId = "";
 
   // 保存窗口id
