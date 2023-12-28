@@ -256,6 +256,12 @@ body {
   background-color: var(--icon-hover-bg-color);
 }
 
+/* 主题 */
+.theme .option.current-theme {
+  color: var(--theme-color);
+  font-weight: 600;
+}
+
 /* 背景不透明度 */
 #bg-transparency-slider {
   display: flex;

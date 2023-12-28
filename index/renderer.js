@@ -83,7 +83,7 @@ class DesktopView {
   constructor(setting, rawIcons) {
     this.setting = setting;
     this.icons = rawIcons;
-    this.theme = setting.theme;
+    // this.theme = setting.theme;
     this.iconsInstance = [];
     this._searchTargets = []; // 搜索目标的数组
     this.selectedTargetIndex = 0; // 选中的搜索目标的索引
@@ -149,7 +149,7 @@ class DesktopView {
     // 监听按下键盘时搜索图标事件
     this.searchDesktopIconsListener();
     // 切换主题
-    this.switchThemeListener();
+    this.themeListener();
     // 添加 keyup 监听事件
     // 空格：打开选中目标
     // 上下左右：切换选中目标
@@ -160,11 +160,7 @@ class DesktopView {
   // 应用设置
   applySettings() {
     // 设置主题
-    if (this.setting.theme === "light") {
-      $("#theme-style").attr("href", "theme/theme-light.css");
-    } else if (this.setting.theme === "dark") {
-      $("#theme-style").attr("href", "theme/theme-dark.css");
-    }
+    this.switchTheme();
   }
   // 处理图标信息 1 分类 2添加搜索关键字
   handleDesktopIcons() {
@@ -305,7 +301,7 @@ class DesktopView {
       // 遍历icons对象，匹配搜索关键字
       this.iconsInstance.forEach((icon) => {
         // 对搜索关键字列表进行遍历 如果搜索关键字中的任意一个单词匹配成功，则匹配成功
-        for(let i = 0; i < icon.searchKeywords.length; i++){
+        for (let i = 0; i < icon.searchKeywords.length; i++) {
           if (icon.searchKeywords[i].includes(this.searchText.toLowerCase())) {
             icon.searchTarget = true; // 匹配成功
             this.searchTargets = [...this.searchTargets, icon]; // 添加到搜索目标数组中
@@ -381,15 +377,15 @@ class DesktopView {
     });
   }
   // ----------------------------------------------
-  // 切换主题
-  switchThemeListener() {
+  // 监听主题切换按钮
+  themeListener() {
+    // 监听主题切换按钮
     $("#light-theme").click(() => {
       console.log("light-theme clicked");
       // 保存设置
       this.setting.theme = "light";
       utools.db.put(this.setting);
-
-      $("#theme-style").attr("href", "theme/theme-light.css");
+      this.switchTheme();
     });
 
     $("#dark-theme").click(() => {
@@ -397,8 +393,36 @@ class DesktopView {
       // 保存设置
       this.setting.theme = "dark";
       utools.db.put(this.setting);
-      $("#theme-style").attr("href", "theme/theme-dark.css");
+      this.switchTheme();
     });
+
+    $("#auto-theme").click(() => {
+      console.log("auto-theme clicked");
+      // 保存设置
+      this.setting.theme = "auto";
+      utools.db.put(this.setting);
+      this.switchTheme();
+    });
+  }
+  // 切换主题
+  switchTheme() {
+    // 移除所有主题类名
+    $(".current-theme").removeClass("current-theme");
+
+    if (this.setting.theme === "light") {
+      $("#light-theme").addClass("current-theme");
+      $("#theme-style").attr("href", "theme/theme-light.css");
+    } else if (this.setting.theme === "dark") {
+      $("#dark-theme").addClass("current-theme");
+      $("#theme-style").attr("href", "theme/theme-dark.css");
+    } else if (this.setting.theme === "auto") {
+      $("#auto-theme").addClass("current-theme");
+      if (utools.isDarkColors()) {
+        $("#theme-style").attr("href", "theme/theme-dark.css");
+      } else {
+        $("#theme-style").attr("href", "theme/theme-light.css");
+      }
+    }
   }
 }
 
@@ -426,7 +450,7 @@ function getLocalSettings() {
     // 如果没有设置，则设置默认值
     settings = {
       _id: "settings",
-      theme: "dark",
+      theme: "auto",
     };
     res = utools.db.put(settings);
     // settingdb_rev = res.rev;
