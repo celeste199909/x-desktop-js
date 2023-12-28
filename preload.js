@@ -29,9 +29,8 @@ function createDesktopWindow() {
         desktopWindow.webContents.id
       );
       showDesktop(desktopWindow);
-
-      desktopWindow.webContents.openDevTools();
       // 开发者工具
+      desktopWindow.webContents.openDevTools();
       // 监听子窗口隐藏事件
       ipcRenderer.on("hideDesktop", (e, data) => {
         desktopWindow.hide();
@@ -65,16 +64,15 @@ window.openUrl = function (url) {
 // 显示桌面
 function showDesktop(desktopWindow) {
   if (!desktopWindow) {
-
     desktopWindow = createDesktopWindow();
   } else {
+    desktopWindow.show();
     // 隐藏主窗口
     utools.hideMainWindow();
     // utools.removeSubInput();
     // 通知子窗口显示, 播放动画
     ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
     // 显示子窗口
-    desktopWindow.show();
     // utools.simulateMouseClick();
   }
 }

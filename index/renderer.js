@@ -41,20 +41,14 @@ class Icon {
    */
   set selectedTarget(value) {
     this._selectedTarget = value;
+    // console.log("this._selectedTarget:", this._selectedTarget);
     if (value) {
+      console.log("设置新选中目标");
       // 添加类名 设为选中目标
       $(`#${this.id}`).addClass("selected-target");
-      // 并添加键盘监听事件，当按下空格时打开该图标
-      $(document).keyup((event) => {
-        if (event.keyCode === 32) {
-          $(`#${this.id}`).click();
-        }
-      });
     } else {
       // 移除类名 取消选中目标
       $(`#${this.id}`).removeClass("selected-target");
-      // 取消键盘监听事件
-      $(document).off("keyup");
     }
   }
 
@@ -91,11 +85,14 @@ class DesktopView {
     this.icons = rawIcons;
     this.theme = setting.theme;
     this.iconsInstance = [];
+    this._searchTargets = []; // 搜索目标的数组
     this.selectedTargetIndex = 0; // 选中的搜索目标的索引
     // 搜索文本
     this._searchText = "";
     // 是否正在输入搜索内容
     this._onTypingSearch = false;
+    // 输入倒计时
+    this._typingTimer = null;
   }
 
   get searchText() {
@@ -119,18 +116,26 @@ class DesktopView {
   set onTypingSearch(value) {
     this._onTypingSearch = value;
     if (value) {
+      console.log("进入搜索状态");
       // 正在输入搜索内容, 显示按键指示器, 并使用淡入动画效果
       $("#keypress-indicate").stop(true, true).fadeIn();
     } else {
-      console.log("unset all search target");
-      // 没有输入搜索内容，取消所有的搜索目标
-      $(document).off("keyup");
+      console.log("退出搜索状态");
+      // $(document).off("keyup");
       this.unsetAllSearchTarget();
-      this.unsetAllSelectedTarget();
       this.searchText = "";
       // 隐藏按键指示器, 并使用淡出动画效果
       $("#keypress-indicate").stop(true, true).fadeOut();
     }
+  }
+
+  get searchTargets() {
+    return this._searchTargets;
+  }
+
+  set searchTargets(value) {
+    this._searchTargets = value;
+    console.log("this._searchTargets:", this._searchTargets);
   }
 
   // 初始化
@@ -143,10 +148,13 @@ class DesktopView {
     this.renderDesktopIcons();
     // 监听按下键盘时搜索图标事件
     this.searchDesktopIconsListener();
-    // 监听子窗口隐藏事件 按下esc ctrl键隐藏窗口
-    this.hideDeskListener();
     // 切换主题
     this.switchThemeListener();
+    // 添加 keyup 监听事件
+    // 空格：打开选中目标
+    // 上下左右：切换选中目标
+    // 回车：打开选中目标
+    this.keyupListener();
   }
 
   // 应用设置
@@ -238,26 +246,18 @@ class DesktopView {
     $("#app").append(iconsWrapper);
   }
   // -------------- 搜索相关 -------------------
-  // 取消选中的图标
-  unsetAllSelectedTarget() {
-    this.iconsInstance.forEach((icon) => {
-      if (icon.searchTarget) {
-        icon.selectedTarget = false;
-      }
-    });
-  }
   // 取消所有的搜索目标
   unsetAllSearchTarget() {
-    this.iconsInstance.forEach((icon) => {
-      if (icon.searchTarget) {
-        icon.searchTarget = false;
-      }
+    console.log("取消所有的搜索目标 选择目标 清空搜索数组 重置选择索引");
+    this.searchTargets.forEach((icon) => {
+      icon.searchTarget = false;
+      icon.selectedTarget = false;
     });
+    this.selectedTargetIndex = 0;
+    this.searchTargets = [];
   }
   // 监听按下键盘时搜索图标事件
   searchDesktopIconsListener() {
-    let typingTimer;
-
     // 字母 数字 或者退格键
     const isValidKey = (event) => {
       return (
@@ -269,79 +269,118 @@ class DesktopView {
     };
 
     $(document).on("keydown", (event) => {
-      // 如果按下键不在检测范围内则返回
-      if (!isValidKey(event)) {
-        this.onTypingSearch = false;
+      // 如果按下键不在检测范围内 或者 删除空内容 则返回
+      if (!isValidKey(event) || (event.keyCode === 8 && !this.searchText)) {
+        // this.onTypingSearch = false;
         return;
       }
-
-      clearTimeout(typingTimer); // 清除之前的定时器
 
       if (!this.onTypingSearch) {
         // 如果不是正在输入搜索内容，则设置为正在输入搜索内容
         this.onTypingSearch = true;
       }
 
-      if (event.keyCode === 8 && this.searchText.length > 0) {
-        // 如果是退格键，并且有输入内容，则删除最后一个字符
-        this.searchText = this.searchText.slice(0, -1);
+      clearTimeout(this._typingTimer); // 清除之前的定时器
+      this.unsetAllSearchTarget(); // 取消所有的搜索目标
+
+      // 如果是退格键
+      if (event.keyCode === 8) {
+        // 并且有输入内容，则删除最后一个字符
+        if (this.searchText.length > 0) {
+          this.searchText = this.searchText.slice(0, -1);
+        }
+        // 删除后没有内容，则退出搜索状态
+        if (!this.searchText.length > 0) {
+          this.onTypingSearch = false;
+          return;
+        }
       }
 
+      // 如果不是退格键
       if (event.keyCode !== 8) {
-        // 如果不是退格键，则将按下的键添加到searchText变量中
         // 将按下的键添加到searchText变量中
         this.searchText += event.key;
       }
 
-      this.updateSearchResultView(); // 更新视图
-
-      // 设置定时器，在三秒后清空searchText并隐藏key-indicate元素，使用淡出动画效果
-      typingTimer = setTimeout(() => {
-        this.onTypingSearch = false;
-        this.searchText = "";
-      }, 3000);
-    });
-  }
-  // 根据输入的文本匹配并更新数组中的对象
-  updateSearchResultView() {
-
-    // 清除所有的search-target
-    if (!this.searchText) {
-      this.onTypingSearch = false;
-      return;
-    }
-    // 遍历icons对象，匹配搜索关键字
-    this.iconsInstance.forEach((icon) => {
-      let match = false;
-      // 对搜索关键字列表进行遍历 如果搜索关键字中的任意一个单词匹配成功，则匹配成功
-      icon.searchKeywords.forEach((keyword) => {
-        if (keyword.includes(this.searchText.toLowerCase())) {
-          // console.log("icon:", icon);
-          match = true;
-          return;
+      // 遍历icons对象，匹配搜索关键字
+      this.iconsInstance.forEach((icon) => {
+        // 对搜索关键字列表进行遍历 如果搜索关键字中的任意一个单词匹配成功，则匹配成功
+        for(let i = 0; i < icon.searchKeywords.length; i++){
+          if (icon.searchKeywords[i].includes(this.searchText.toLowerCase())) {
+            icon.searchTarget = true; // 匹配成功
+            this.searchTargets = [...this.searchTargets, icon]; // 添加到搜索目标数组中
+            break;
+          } else {
+            icon.searchTarget = false; // 未匹配成功
+          }
         }
       });
-      // 更新视图
-      if (match) {
-        icon.searchTarget = true; // 匹配成功
-      } else {
-        icon.searchTarget = false; // 未匹配成功
+      this.searchTargets[this.selectedTargetIndex].selectedTarget = true; // 选中搜索目标
+
+      // 设置定时器，在三秒后退出搜索状态
+      this._typingTimer = setTimeout(() => {
+        this.onTypingSearch = false;
+      }, 5000);
+    });
+  }
+  // 添加空格监听事件:打开选中目标 和 切换选中目标
+  // 空格：打开选中目标
+  // 上下左右：切换选中目标
+  // 回车：打开选中目标
+  keyupListener() {
+    $(document).on("keydown", (event) => {
+      // 如果按下的是空格键或者回车模拟点击拥有选中目标类名的图标
+      if (event.keyCode === 32 || event.keyCode === 13) {
+        // 获取拥有选中目标类名的图标
+        const selectedTarget = this.searchTargets[this.selectedTargetIndex];
+        // 如果有选中目标，则模拟点击
+        if (selectedTarget) {
+          $(`#${selectedTarget.id}`).click();
+        } else {
+          console.log("没有选中目标");
+        }
+        return;
+      }
+      // 判断是否按下的是从37到40上下左右键，上键38 下键40 左37 右39
+      if (event.keyCode >= 37 && event.keyCode <= 40) {
+        // 判断searchTargets数组是否为空
+        if (!this.searchTargets.length) {
+          return;
+        }
+        // 清除倒计时
+        clearTimeout(this._typingTimer);
+        // 取消当前选中目标
+        this.searchTargets[this.selectedTargetIndex].selectedTarget = false;
+        // 如果按下的是上键或左键
+        if (event.keyCode === 38 || event.keyCode === 37) {
+          // 如果当前选中目标索引大于0，则选中上一个
+          this.selectedTargetIndex--;
+          if (this.selectedTargetIndex < 0) {
+            this.selectedTargetIndex = this.searchTargets.length - 1;
+          }
+        }
+        // 如果按下的是下键或右键
+        if (event.keyCode === 40 || event.keyCode === 39) {
+          // 如果当前选中目标索引小于搜索目标数组的长度减1，则选中下一个
+          this.selectedTargetIndex++;
+          if (this.selectedTargetIndex > this.searchTargets.length - 1) {
+            this.selectedTargetIndex = 0;
+          }
+        }
+        // 选中新的选中目标
+        this.searchTargets[this.selectedTargetIndex].selectedTarget = true;
+        return;
+      }
+
+      // 按下esc ctrl键隐藏窗口
+      if (event.ctrlKey || event.which === 17 || event.which === 27) {
+        console.log("Esc Ctrl key is keyup");
+        window.hideDesk();
+        return;
       }
     });
   }
   // ----------------------------------------------
-  // 监听子窗口隐藏事件 按下esc ctrl键隐藏窗口
-  hideDeskListener() {
-    // 监听esc Ctrl 键按下事件
-    $(document).keydown((event) => {
-      // 监听 Ctrl 键按下事件
-      if (event.ctrlKey || event.which === 17 || event.which === 27) {
-        console.log("Ctrl key is pressed");
-        window.hideDesk();
-        // window.closeDesk();
-      }
-    });
-  }
   // 切换主题
   switchThemeListener() {
     $("#light-theme").click(() => {
