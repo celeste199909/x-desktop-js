@@ -11,29 +11,36 @@
     <title>X桌面</title>
   </head>
   <body>
-    <div id="app" class="">
+    <div id="app" class="" >
+      <!-- 页面容器 -->
+      <div id="pages"></div>
+      <!-- 切换页面按钮 左右 -->
+      <div id="prev-btn" class="switch-btn"></div>
+      <div id="next-btn" class="switch-btn"></div>
       <!-- 侧边栏 -->
-      <div id="sidebar-wrapper">
-        <div id="indicate"></div>
-        <div id="sidebar">
-          <div class="setting">设置</div>
-          <!-- 主题 -->
-          <div class="setting-item theme">
-            <div class="setting-item-name">主题</div>
-            <div class="options">
-              <div id="dark-theme" class="option">暗色</div>
-              <div id="light-theme" class="option">亮色</div>
-              <div id="auto-theme" class="option">跟随系统</div>
-            </div>
+      <div id="sidebar-btn"></div>
+      <div id="sidebar">
+        <div class="setting">
+          <div></div>
+          <div>设置</div>
+          <div id="close-sidebar-btn">x</div>
+        </div>
+        <!-- 主题 -->
+        <div class="setting-item theme">
+          <div class="setting-item-name">主题</div>
+          <div class="options">
+            <div id="dark-theme" class="option">暗色</div>
+            <div id="light-theme" class="option">亮色</div>
+            <div id="auto-theme" class="option">跟随系统</div>
           </div>
         </div>
       </div>
-      <!-- 按下按钮指示器 -->
-      <div id="keypress-indicate">
-      </div>
+      <!-- 页面指示器 -->
+      <div id="pages-indicate"></div>
+      <!-- 按下按钮指示器:显示按下了什么键 -->
+      <div id="keypress-indicate"></div>
     </div>
     <script type="module" src="renderer.js"></script>
-    <script>
-    </script>
+    <script></script>
   </body>
 </html>
