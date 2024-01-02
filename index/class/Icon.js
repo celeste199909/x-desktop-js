@@ -1,6 +1,7 @@
 export class Icon {
   constructor(icon, desktop) {
     this.id = icon.id;
+    this.rawName = icon.rawName;
     this.iconName = icon.iconName;
     this.iconImage = icon.iconImage;
     this.realPath = icon.realPath;

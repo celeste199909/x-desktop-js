@@ -76,3 +76,4 @@ function showDesktop(desktopWindow) {
     // utools.simulateMouseClick();
   }
 }
+

@@ -1,14 +1,14 @@
-const { pinyin } = pinyinPro;
-import { strContainsChinese, extractInitials } from "../../js/utils.js";
 
 import { Page } from "./Page.js";
-
+// const desktopView = new Desktop(deskLayout, localSetting, pagesData);
 export class Desktop {
-  constructor(layout, setting, rawIcons) {
+  constructor(layout, setting, pagesData) {
     this.layout = layout;
     this.setting = setting;
-    this.icons = rawIcons;
-    // this.theme = setting.theme;
+    // this.pagesData = pagesData;
+    this.sortInfo = pagesData.sortInfo;
+    this.iconsData = pagesData.iconsData;
+
     this._searchTargets = []; // 搜索目标的数组
     this.selectedTargetIndex = 0; // 选中的搜索目标的索引
     // 搜索文本
@@ -29,21 +29,16 @@ export class Desktop {
   get searchText() {
     return this._searchText;
   }
-  /**
-   * @param {string} value
-   */
   set searchText(value) {
     this._searchText = value;
     // 更新按键指示器的文本
     $("#keypress-indicate").text(value);
   }
+
   // 是否正在输入搜索内容
   get onTypingSearch() {
     return this._onTypingSearch;
   }
-  /**
-   * @param {boolean} value
-   */
   set onTypingSearch(value) {
     this._onTypingSearch = value;
     if (value) {
@@ -64,7 +59,6 @@ export class Desktop {
   get searchTargets() {
     return this._searchTargets;
   }
-
   set searchTargets(value) {
     this._searchTargets = value;
     console.log("this._searchTargets:", this._searchTargets);
@@ -74,9 +68,6 @@ export class Desktop {
   get onEditMode() {
     return this._onEditMode;
   }
-  /**
-   * @param {boolean} value
-   */
   set onEditMode(value) {
     // 保存 this
     const d = this;
@@ -91,47 +82,22 @@ export class Desktop {
 
   // 初始化
   init() {
-    // 应用设置
-    this.applySettings();
-    // 处理图标信息
-    this.handleDesktopIcons();
-    // 设置布局
-    this.setLayout();
-    // 搜索：监听按下键盘时搜索图标事件
-    this.searchDesktopIconsListener();
-    // 元素：添加点击事件监听
-    // 用于 1 切换主题 2 打开/关闭侧边栏
-    this.elementClickListener();
-    // 键盘：添加 keyup 监听事件
-    // 空格：打开选中目标
-    // 上下左右：切换选中目标
-    // 回车：打开选中目标
-    this.keyupListener();
-    // 鼠标滚轮切换页面
-    this.mousewheelListener();
-
-    // 获取area元素
-    const leftArea = document.querySelector("#left-area");
-    Sortable.create(leftArea, {
-      group: "page",
-    });
-    const rightArea = document.querySelector("#right-area");
-    Sortable.create(rightArea, {
-      group: "page",
-    });
+    this.applySettings();  // 应用设置
+    this.setLayout();  // 设置布局
+    this.searchDesktopIconsListener();  // 搜索：监听按下键盘时搜索图标事件
+    this.elementClickListener(); // 1 切换主题 2 打开/关闭侧边栏
+    this.keyupListener();  // 键盘：添加 keyup 监听事件
+    this.mousewheelListener();  // 鼠标滚轮切换页面
+    this.addDragDetectionArea();  // 添加拖动图标的跨页检测区域
   }
 
   // 设置布局
   setLayout() {
-    const desktop = this;
-    // 计算页面数量
-    const pagesNumber = Math.ceil(
-      this.icons.length / (this.layout.row * this.layout.column)
-    );
-    // 计算页面容量
-    const capacity = this.layout.row * this.layout.column;
+    const desktop = this;  // 计算页面容量
+    const capacity = this.layout.row * this.layout.column;  // 页面数量
+    const pagesNumber = this.iconsData.length;
+    console.log("this.iconsData:", this.iconsData);
     // 创建页面数据
-    // 填充数据 并创建容器 创建页面
     for (let pageIndex = 0; pageIndex < pagesNumber; pageIndex++) {
       const options = {
         pageIndex: pageIndex,
@@ -140,13 +106,16 @@ export class Desktop {
       };
       const page = new Page(
         options,
-        this.icons.slice(pageIndex * capacity, (pageIndex + 1) * capacity),
+        this.iconsData[pageIndex],
         desktop
       );
       page.init();
       this.pages.push(page);
     }
     console.log("this.pages:", this.pages);
+    // 保存排序信息到本地
+    utools.dbStorage.setItem("sortInfo", this.sortInfo);
+
     // 创建页面切换指示器
     for (let i = 0; i < pagesNumber; i++) {
       const indicate = $("<div></div>")
@@ -171,67 +140,6 @@ export class Desktop {
   applySettings() {
     // 设置主题
     this.switchTheme();
-  }
-  // 处理图标信息 1 分类 2添加搜索关键字
-  handleDesktopIcons() {
-    //  分类
-    const handledIcons = [];
-
-    this.icons.forEach((icon) => {
-      // 给 icon 添加 一个id
-      icon.id = Math.random().toString(36).slice(-8);
-      // 存放搜索关键字的数组
-      icon.searchKeywords = [];
-      const splitList = icon.iconName.split(".");
-      // 获取文件后缀名
-      const fileType = splitList[splitList.length - 1];
-      // 去除文件后缀名
-      icon.iconName = icon.iconName.replace(/\.[^/.]+$/, "");
-      // 为图标添加搜索关键字
-      if (strContainsChinese(icon.iconName)) {
-        // 如果是中文
-        // 1转换为拼音 2去除点 3并转换为小写： wei xin
-        const searchingStr = pinyin(icon.iconName, { toneType: "none" })
-          .replace(/\./g, "")
-          .toLowerCase();
-        // 去除空格，并放入索引数组 weixin
-        icon.searchKeywords.push(searchingStr.replace(/\s/g, ""));
-        // 用空格分割成数组，扁平化数组，并放入索引数组
-        icon.searchKeywords.push(...searchingStr.split(" "));
-        // 提取首字母 wx
-        icon.searchKeywords.push(extractInitials(searchingStr));
-        // searchKeywords = [weixin, wx]
-        // console.log("icon.searchKeywords:", icon.searchKeywords);
-      } else {
-        // 如果是英文
-        // 转成小写, 去除点
-        const searchingStr = icon.iconName.replace(/\./g, "").toLowerCase();
-        // 去除空格，并放入索引数组
-        icon.searchKeywords.push(searchingStr.replace(/\s/g, ""));
-        // 用空格分割成数组，扁平化数组，并放入索引数组
-        icon.searchKeywords.push(...searchingStr.split(" "));
-        // 提取首字母
-        icon.searchKeywords.push(extractInitials(searchingStr));
-        // console.log("icon.searchKeywords:", icon.searchKeywords);
-      }
-
-      // 设置图标的类型，分为应用、文件夹和文件，放入不同的数组中
-      if (fileType === "lnk") {
-        icon.type = "app";
-        icon.suffix = fileType;
-      } else if (splitList.length === 1) {
-        icon.type = "folder";
-        // 修改文件夹图标
-        icon.iconImage = "../assets/folder-64.png";
-      } else {
-        icon.type = "file";
-        icon.suffix = fileType;
-      }
-
-      handledIcons.push(icon);
-    });
-    console.log("handledIcons:", handledIcons);
-    this.icons = handledIcons;
   }
   // -------------- 搜索相关 -------------------
   // 取消所有的搜索目标
@@ -293,19 +201,16 @@ export class Desktop {
 
       // 搜索目标
       this.pages.forEach((page) => {
-        page.forEach((cell) => {
-          if (cell.icon) {
-            const icon = cell.icon;
-            for (let i = 0; i < icon.searchKeywords.length; i++) {
-              if (
-                icon.searchKeywords[i].includes(this.searchText.toLowerCase())
-              ) {
-                icon.searchTarget = true; // 匹配成功
-                this.searchTargets = [...this.searchTargets, icon]; // 添加到搜索目标数组中
-                break;
-              } else {
-                icon.searchTarget = false; // 未匹配成功
-              }
+        page.icons.forEach((icon) => {
+          for (let i = 0; i < icon.searchKeywords.length; i++) {
+            if (
+              icon.searchKeywords[i].includes(this.searchText.toLowerCase())
+            ) {
+              icon.searchTarget = true; // 匹配成功
+              this.searchTargets = [...this.searchTargets, icon]; // 添加到搜索目标数组中
+              break;
+            } else {
+              icon.searchTarget = false; // 未匹配成功
             }
           }
         });
@@ -322,9 +227,6 @@ export class Desktop {
     });
   }
   // 添加空格监听事件:打开选中目标 和 切换选中目标
-  // 空格：打开选中目标
-  // 上下左右：切换选中目标
-  // 回车：打开选中目标
   keyupListener() {
     $(document).on("keydown", (event) => {
       // 如果按下的是空格键或者回车模拟点击拥有选中目标类名的图标
@@ -408,7 +310,6 @@ export class Desktop {
       }
     });
   }
-  // ----------------------------------------------
   // 监听主题切换按钮/侧边栏按钮
   elementClickListener() {
     // 侧边栏的设置部分
@@ -447,29 +348,6 @@ export class Desktop {
       $("#sidebar").removeClass("active");
       $("#sidebar-btn").removeClass("active");
     });
-
-    // // 启用拖拽
-    // $("#enable-drag-btn").on("click", () => {
-    //   console.log("开启拖拽");
-    //   this.onEditMode = true;
-    //   // 保存设置
-    //   this.setting.enableDrag = !this.setting.enableDrag;
-    //   utools.db.put(this.setting);
-    //   // 切换按钮状态
-    //   $("#enable-drag-btn").addClass("active");
-    //   $("#disable-drag-btn").removeClass("active");
-    // });
-    // // 禁用拖拽
-    // $("#disable-drag-btn").on("click", () => {
-    //   console.log("禁用拖拽");
-    //   this.onEditMode = false;
-    //   // 保存设置
-    //   this.setting.enableDrag = !this.setting.enableDrag;
-    //   utools.db.put(this.setting);
-    //   // 切换按钮状态
-    //   $("#enable-drag-btn").removeClass("active");
-    //   $("#disable-drag-btn").addClass("active");
-    // });
   }
   // 切换主题
   switchTheme() {
@@ -491,7 +369,7 @@ export class Desktop {
       }
     }
   }
-  // 移到某一页 pageIndex: number | "prev" | "next"
+  // 移到某一页
   moveToPage(pageIndex, extraDistance = 0, duration = 300) {
     if (pageIndex < 0) {
       this.currentPageIndex = 0;
@@ -552,5 +430,35 @@ export class Desktop {
         "border-radius": "0px",
       });
     }
+  }
+  // 添加拖动图标的跨页检测区域
+  addDragDetectionArea() {
+    // 添加检测区域
+    // 获取area元素
+    const leftArea = document.querySelector("#left-area");
+    Sortable.create(leftArea, {
+      group: "page",
+    });
+    const rightArea = document.querySelector("#right-area");
+    Sortable.create(rightArea, {
+      group: "page",
+    });
+  }
+  // 更新图标排序信息
+  updateSortInfo() {
+    // 更新图标排序信息
+    const sortInfo = [];
+    this.pages.forEach((page) => {
+      const pageSortInfo = [];
+      page.icons.forEach((icon) => {
+        pageSortInfo.push(icon.rawName);
+        console.log("icon", icon);
+      });
+      sortInfo.push(pageSortInfo);
+    });
+    this.sortInfo = sortInfo;
+    console.log("更新后的图标排序信息:", this.sortInfo);
+    // 保存图标排序信息
+    utools.dbStorage.setItem("sortInfo", this.sortInfo);
   }
 }

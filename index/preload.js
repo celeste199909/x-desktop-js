@@ -18,11 +18,8 @@ window.getDesktopIcons = function (callback) {
     }
 
     files.forEach((file) => {
-      // console.log("file:", file);
-
       // 或者快捷方式的真正路径
       const realPath = realpathSync(desktopPath + "/" + file);
-
       desktopIcons.push({
         iconName: file,
         iconImage: utools.getFileIcon(realPath),
@@ -40,9 +37,6 @@ window.getDesktopIcons = function (callback) {
 
   // 保存窗口id
   ipcRenderer.on("init", (event, data) => {
-    console.log(" event", event);
-    console.log(" event.senderId:", event.senderId);
-    console.log("data:", data);
     window.winId = event.senderId;
   });
 
@@ -61,3 +55,10 @@ window.getDesktopIcons = function (callback) {
     root.style.animation = "show 0.3s linear forwards";
   });
 })();
+
+window.onDevMode = true;
+window.l = function (...args) {
+  if (window.onDevMode) {
+    console.log("【开发调试】", ...args);
+  }
+};

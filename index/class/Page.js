@@ -2,7 +2,7 @@ import { Icon } from "./Icon.js";
 import { Alert } from "../../components/Alert.js";
 
 export class Page {
-  constructor(options, handledIcons, desktop) {
+  constructor(options, rawIcons, desktop) {
     // 选项
     this.pageIndex = options.pageIndex;
     this.capacity = options.capacity;
@@ -11,8 +11,8 @@ export class Page {
     this.layout = desktop.layout;
     this.desktop = desktop;
     // 图标
-    this.handledIcons = handledIcons;
-    this.icons = [];
+    this.rawIcons = rawIcons;  // 原始图标信息
+    this.icons = [];  // 存放图标实例
     // 编辑模式
     // this._onEditMode = false;
     this.sortable = null;
@@ -56,7 +56,7 @@ export class Page {
     });
 
     // 渲染图标
-    this.handledIcons.forEach((icon) => {
+    this.rawIcons.forEach((icon) => {
       const iconInstance = new Icon(icon, this.desktop);
       appsWrapper.append(iconInstance.getIconElement());
       this.icons.push(iconInstance);
@@ -81,18 +81,20 @@ export class Page {
       //拖拽时的自定义样式
       dragClass: "sortable-drag",
       onEnd: (evt) => {
-        console.log("evt:", evt);
-
+        // console.log("evt:", evt);
         // 获取拖动的图标
         const icon = this.icons[evt.oldIndex];
         // 重新排列图标数组
         this.icons.splice(evt.oldIndex, 1);
         this.icons.splice(evt.newIndex, 0, icon);
-        // 重新渲染页面
+        console.log("拖动后, 该页面的icons:", this.icons);
+        // 保存图标排序信息        
+        desktop.updateSortInfo();
+
       },
       // 移动时如果超出 apps-wrapper ，页面切换
       onStart: function (evt) {
-        console.log(evt);
+        // console.log(evt);
         var index = evt.oldIndex;
       },
       onMove: function (evt) {
@@ -116,7 +118,7 @@ export class Page {
           this.moveTimer = setTimeout(() => {
             this.moveEventTrigger = false;
           }, 1000);
-          console.log("去往的是left-area 或者 right-area");
+          // console.log("去往的是left-area 或者 right-area");
           desktop.moveToPage(desktop.currentPageIndex - 1);
           return false;
         }
@@ -124,7 +126,7 @@ export class Page {
         if (
           evt.to.id === "right-area"
         ) {
-          console.log("去往的是right-area");
+          // console.log("去往的是right-area");
           // 如果已经触发过一次，不再触发
           if (this.moveEventTrigger) {
             return false;
@@ -134,19 +136,16 @@ export class Page {
           this.moveTimer = setTimeout(() => {
             this.moveEventTrigger = false;
           }, 1000);
-          console.log("去往的是left-area 或者 right-area");
+          // console.log("去往的是left-area 或者 right-area");
           desktop.moveToPage(desktop.currentPageIndex + 1);
           return false;
         }
-        console.log("evt:", evt);
-        console.log("被拖拽的对象所在区域 {left, top, right, bottom}", evt.draggedRect);
-        console.log("鼠标的位置",evt.clientY);
+        // console.log("evt:", evt);
+        // console.log("被拖拽的对象所在区域 {left, top, right, bottom}", evt.draggedRect);
+        // console.log("鼠标的位置",evt.clientY);
       },
     });
-    console.log("sortable", sortable);
     this.sortable = sortable;
-    // 初始禁用
-    // sortable.option("disabled", true);
   }
 
   //   元素事件监听
