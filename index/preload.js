@@ -42,18 +42,18 @@ window.getDesktopIcons = function (callback) {
 
   // 隐藏窗口
   window.hideDesk = function () {
-    const root = document.querySelector("html");
-    root.style.animation = `hide 0.3s linear forwards`;
-    setTimeout(() => {
+    // const root = document.querySelector("html");
+    // root.style.animation = `hide 0.3s linear forwards`;
+    // setTimeout(() => {
       ipcRenderer.sendTo(winId, "hideDesktop");
-    }, 300);
+    // }, 300);
   };
 
   // 播放动画
-  ipcRenderer.on("showDesktop", (e) => {
-    const root = document.querySelector("html");
-    root.style.animation = "show 0.3s linear forwards";
-  });
+  // ipcRenderer.on("showDesktop", (e) => {
+  //   const root = document.querySelector("html");
+  //   root.style.animation = "show 0.3s linear forwards";
+  // });
 })();
 
 window.onDevMode = true;

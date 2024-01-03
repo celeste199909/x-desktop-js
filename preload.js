@@ -12,9 +12,9 @@ function createDesktopWindow() {
         // devTools: true,
         preload: "./index/preload.js",
       },
-      frame: false,
-      transparent: true,
-      backgroundColor: "#00000000",
+      // frame: false,
+      // transparent: true,
+      // backgroundColor: "#00000000",
       alwaysOnTop: true,
       resizable: false,
       movable: false,
@@ -69,9 +69,11 @@ function showDesktop(desktopWindow) {
     desktopWindow.show();
     // 隐藏主窗口
     utools.hideMainWindow();
+    desktopWindow.show();
+
     // utools.removeSubInput();
     // 通知子窗口显示, 播放动画
-    ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
+    // ipcRenderer.sendTo(desktopWindow.webContents.id, "showDesktop");
     // 显示子窗口
     // utools.simulateMouseClick();
   }

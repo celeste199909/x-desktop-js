@@ -3,10 +3,14 @@
   "description": " X 桌面是一个简单的桌面，可以快速帮你打开应用，双击 Ctrl 即可唤出桌面, 单击 Ctrl 键隐藏",
   "author": "无限蔚蓝",
   "version": "1.0.1",
-  "main":"index.html",
+  "main": "index.html",
   "preload": "preload.js",
   "logo": "./assets/x-desktop.png",
   "platform": ["win32"],
+  "pluginSetting": {
+    "single": true,
+    "height": 1
+  },
   "development": {
     "main": "http://localhost:5173/index.html"
   },
