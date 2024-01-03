@@ -8,6 +8,8 @@ export class Icon {
     this.searchKeywords = icon.searchKeywords;
     this.type = icon.type;
     this.suffix = icon.suffix;
+    this.isNew = icon.isNew;
+
     this.desktop = desktop;
     this._searchTarget = false;
     this._selectedTarget = false;
@@ -25,9 +27,11 @@ export class Icon {
     if (value) {
       // 添加类名 设为搜索目标
       $(`#${this.id}`).addClass("search-target");
+      $(`#${this.id}`).removeClass("not-search-target");
     } else {
       // 移除类名 取消搜索目标
       $(`#${this.id}`).removeClass("search-target");
+      $(`#${this.id}`).addClass("not-search-target");
     }
   }
 
@@ -52,11 +56,14 @@ export class Icon {
   }
 
   // 渲染图标
-  getIconElement() {
+  getIconElement(state) {
     // 单个icon的容器
     const iconElement = $("<div></div>").addClass("icon");
     // 设置id
     iconElement.attr("id", this.id.toString());
+    if(this.isNew){
+      iconElement.addClass("new-icon");
+    }
     // 单个icon的点击事件
     iconElement.on("click", (e) => {
       // 如果是编辑模式
@@ -64,6 +71,17 @@ export class Icon {
         console.log("处于编辑模式");
         return;
       }
+      // 如果已被删除
+      if(this.type === "deleted"){
+        return;
+      }
+      // 如果是新的图标
+      if(this.isNew){
+        this.isNew = false;
+        iconElement.removeClass("new-icon");
+        return;
+      }
+
       // 阻止事件冒泡
       e.stopPropagation();
 

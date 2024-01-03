@@ -1,13 +1,12 @@
-
 import { Page } from "./Page.js";
 // const desktopView = new Desktop(deskLayout, localSetting, pagesData);
 export class Desktop {
   constructor(layout, setting, pagesData) {
     this.layout = layout;
     this.setting = setting;
-    // this.pagesData = pagesData;
-    this.sortInfo = pagesData.sortInfo;
-    this.iconsData = pagesData.iconsData;
+    this.sortInfo = pagesData.sortInfo; // 图标排序信息
+    this.iconsData = pagesData.iconsData; // 图标初始化数据
+    this.newIcons = pagesData.newIcons;
 
     this._searchTargets = []; // 搜索目标的数组
     this.selectedTargetIndex = 0; // 选中的搜索目标的索引
@@ -23,6 +22,8 @@ export class Desktop {
     this.currentPageIndex = 0;
     // 编辑模式 多页面全览模式
     this._onEditMode = false;
+    // 侧边栏显示状态
+    this.sidebarShow = false;
   }
 
   // 搜索文本
@@ -82,59 +83,51 @@ export class Desktop {
 
   // 初始化
   init() {
-    this.applySettings();  // 应用设置
-    this.setLayout();  // 设置布局
-    this.searchDesktopIconsListener();  // 搜索：监听按下键盘时搜索图标事件
+    this.applySettings(); // 应用设置
+    this.removeEmptyPage();
+    this.setLayout(); // 设置布局
+    this.searchDesktopIconsListener(); // 搜索：监听按下键盘时搜索图标事件
     this.elementClickListener(); // 1 切换主题 2 打开/关闭侧边栏
-    this.keyupListener();  // 键盘：添加 keyup 监听事件
-    this.mousewheelListener();  // 鼠标滚轮切换页面
-    this.addDragDetectionArea();  // 添加拖动图标的跨页检测区域
+    this.keyupListener(); // 键盘：添加 keyup 监听事件
+    this.mousewheelListener(); // 鼠标滚轮切换页面
+    this.addDragDetectionArea(); // 添加拖动图标的跨页检测区域
   }
 
   // 设置布局
   setLayout() {
-    const desktop = this;  // 计算页面容量
-    const capacity = this.layout.row * this.layout.column;  // 页面数量
-    const pagesNumber = this.iconsData.length;
     console.log("this.iconsData:", this.iconsData);
+    // 将 this.iconsData 中的空数组去除
+    this.iconsData = this.iconsData.filter((page) => {
+      return page.length > 0;
+    });
+    const desktop = this; // 计算页面容量
+    const capacity = this.layout.row * this.layout.column; // 页面数量
+    const pagesNumber = this.iconsData.length;
     // 创建页面数据
     for (let pageIndex = 0; pageIndex < pagesNumber; pageIndex++) {
       const options = {
-        pageIndex: pageIndex,
+        pageId: Math.floor(Math.random() * 100000000),
         // 页面图标容量
         capacity: capacity,
       };
-      const page = new Page(
-        options,
-        this.iconsData[pageIndex],
-        desktop
-      );
-      page.init();
+      const page = new Page(options, this.iconsData[pageIndex], desktop);
+      page.renderTo("end");
       this.pages.push(page);
     }
     console.log("this.pages:", this.pages);
-    // 保存排序信息到本地
-    utools.dbStorage.setItem("sortInfo", this.sortInfo);
-
-    // 创建页面切换指示器
-    for (let i = 0; i < pagesNumber; i++) {
-      const indicate = $("<div></div>")
-        .addClass("page-indicate")
-        .appendTo("#pages-indicate");
-      // 设置点击事件
-      indicate.on("click", () => {
-        this.currentPageIndex = i;
-        this.moveToPage(this.currentPageIndex);
-        // 移除所有的指示器类名
-        $(".current-page-indicate").removeClass("current-page-indicate");
-        // 设置当前页面指示器
-        indicate.addClass("current-page-indicate");
+    // // 保存排序信息到本地
+    // utools.dbStorage.setItem("sortInfo", this.sortInfo);
+    // 如果有新增的图标
+    if (this.newIcons.length > 0) {
+      this.newIcons.forEach((icon) => {
+        this.addIconToPage(icon);
       });
-      // 设置当前页面指示器
-      if (i === this.currentPageIndex) {
-        indicate.addClass("current-page-indicate");
-      }
     }
+
+    // 更新图标排序信息
+    this.updateSortInfo();
+    // 创建页面指示器
+    this.updatePageIndicate();
   }
   // 应用设置
   applySettings() {
@@ -151,6 +144,8 @@ export class Desktop {
     });
     this.selectedTargetIndex = 0;
     this.searchTargets = [];
+    // 移除所有 not-search-target 类名
+    $(".not-search-target").removeClass("not-search-target");
   }
   // 监听按下键盘时搜索图标事件
   searchDesktopIconsListener() {
@@ -215,7 +210,7 @@ export class Desktop {
           }
         });
       });
-
+      // console.log("搜索目标数组:", this.searchTargets);
       // 如果有搜索目标，则根据 selectedTargetIndex 选中
       if (this.searchTargets.length > 0) {
         this.searchTargets[this.selectedTargetIndex].selectedTarget = true; // 选中搜索目标
@@ -342,11 +337,28 @@ export class Desktop {
     $("#sidebar-btn").on("click", () => {
       $("#sidebar").toggleClass("active");
       $("#sidebar-btn").toggleClass("active");
+      this.sidebarShow = !this.sidebarShow;
     });
     // 关闭侧边栏
     $("#close-sidebar-btn").on("click", () => {
       $("#sidebar").removeClass("active");
       $("#sidebar-btn").removeClass("active");
+      this.sidebarShow = false;
+    });
+    // 当侧边栏打开时，点击其他地方关闭侧边栏
+    $(document).on("click", (e) => {
+      if (this.sidebarShow) {
+        // console.log("点击了其他地方", e.target);
+        if (
+          !$(e.target).is("#sidebar") &&
+          !$(e.target).is("#sidebar-btn") &&
+          !$(e.target).is("#close-sidebar-btn")
+        ) {
+          $("#sidebar").removeClass("active");
+          $("#sidebar-btn").removeClass("active");
+          this.sidebarShow = false;
+        }
+      }
     });
   }
   // 切换主题
@@ -381,6 +393,7 @@ export class Desktop {
     }
     // 修改当前页面索引
     this.currentPageIndex = pageIndex;
+    console.log("移动到了第几页:", this.currentPageIndex);
     // 移动页面 播放一次动画
     $("#pages").css({
       transform: `translateX(${
@@ -452,7 +465,7 @@ export class Desktop {
       const pageSortInfo = [];
       page.icons.forEach((icon) => {
         pageSortInfo.push(icon.rawName);
-        console.log("icon", icon);
+        // console.log("icon", icon);
       });
       sortInfo.push(pageSortInfo);
     });
@@ -460,5 +473,102 @@ export class Desktop {
     console.log("更新后的图标排序信息:", this.sortInfo);
     // 保存图标排序信息
     utools.dbStorage.setItem("sortInfo", this.sortInfo);
+  }
+  // 添加一个图标到最近有空位的页面
+  addIconToPage(icon) {
+    for (let i = 0; i < this.pages.length; i++) {
+      // 如果页面容量未满
+      if (this.pages[i].icons.length < this.pages[i].capacity) {
+        // 添加图标
+        this.pages[i].addIcon(icon);
+        return;
+      }
+    }
+    // 创建新页面
+    const options = {
+      pageId: this.pages.length,
+      // 页面图标容量
+      capacity: this.layout.row * this.layout.column,
+    };
+    const page = new Page(options, [icon], this);
+    page.renderTo("end");
+    this.pages.push(page);
+    // 更新图标排序信息
+    this.updateSortInfo();
+    // 创建页面指示器
+    this.updatePageIndicate();
+  }
+  // 创建/更新页面指示器
+  updatePageIndicate() {
+    const pagesNumber = this.pages.length;
+    // 替换页面切换指示器
+    const pagesIndicate = $("#pages-indicate");
+    pagesIndicate.empty(); // 清空现有的指示器
+    for (let i = 0; i < pagesNumber; i++) {
+      const indicate = $("<div></div>")
+        .addClass("page-indicate")
+        .appendTo(pagesIndicate);
+      // 设置点击事件
+      indicate.on("click", () => {
+        this.currentPageIndex = i;
+        this.moveToPage(this.currentPageIndex);
+        // 移除所有的指示器类名
+        $(".current-page-indicate").removeClass("current-page-indicate");
+        // 设置当前页面指示器
+        indicate.addClass("current-page-indicate");
+      });
+      // 设置当前页面指示器
+      if (i === this.currentPageIndex) {
+        indicate.addClass("current-page-indicate");
+      }
+    }
+  }
+  // 添加页面，在开头或者结尾
+  addPageTo(position) {
+    // 创建页面
+    const options = {
+      // 随机id
+      pageId: Math.floor(Math.random() * 100000000),
+      // 页面图标容量
+      capacity: this.layout.row * this.layout.column,
+    };
+    const page = new Page(options, [], this);
+    // 添加页面
+    if (position === "start") {
+      page.renderTo("start");
+      this.pages.unshift(page);
+    } else if (position === "end") {
+      page.renderTo("end");
+      this.pages.push(page);
+    }
+    // 更新图标排序信息
+    this.updateSortInfo();
+    // 创建页面指示器
+    this.updatePageIndicate();
+  }
+  // 删除没有图标的页面
+  removeEmptyPage() {
+    // 遍历页面
+    for (let i = 0; i < this.pages.length; i++) {
+      // 如果页面容量为0
+      if (this.pages[i].icons.length === 0) {
+        // 获取id
+        const pageId = this.pages[i].pageId;
+        // 删除页面
+        $(`#page-${pageId}`).remove();
+        this.pages.splice(i, 1);
+        // 移动到对应的页面
+        if (i < this.currentPageIndex) {
+          this.moveToPage(this.currentPageIndex - 1, 0, 0);
+        }else{
+          this.moveToPage(this.currentPageIndex, 0, 0);
+        }
+        // 更新图标排序信息
+        this.updateSortInfo();
+        // 创建页面指示器
+        this.updatePageIndicate();
+        return;
+      }
+    }
   }
 }

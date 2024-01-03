@@ -5,19 +5,19 @@ const { pinyin } = pinyinPro;
 $(document).ready(function () {
   // 删除本地排序信息
   // utools.dbStorage.removeItem("sortInfo");
-  const deskLayout = getDeskLayout();  // 获取桌面布局信息
+  const deskLayout = getDeskLayout(); // 获取桌面布局信息
   // console.log("桌面布局信息:", deskLayout);
-  const localSetting = getLocalSettings();  // 获取本地设置
+  const localSetting = getLocalSettings(); // 获取本地设置
   // console.log("本地设置:", localSetting);
-  const localSortInfo = getLocalSortInfo();  // 获取本地图标排序信息
+  const localSortInfo = getLocalSortInfo(); // 获取本地图标排序信息
   console.log("本地图标排序信息:", localSortInfo);
   // 获取图标信息
   window.getDesktopIcons(function (rawIcons) {
-    const handledIcons = handleDesktopIcons(rawIcons);  // 处理图标信息
+    const handledIcons = handleDesktopIcons(rawIcons); // 处理图标信息
     // console.log("经过处理的图标:", handledIcons);
-    const pagesData = resolvePagesData(deskLayout, localSortInfo, handledIcons);  // 将图标数据和页面信息进行处理
+    const pagesData = resolvePagesData(deskLayout, localSortInfo, handledIcons); // 将图标数据和页面信息进行处理
     // console.log("页面图标数据:", pagesData);
-    const desktopView = new Desktop(deskLayout, localSetting, pagesData);  // 初始化桌面视图
+    const desktopView = new Desktop(deskLayout, localSetting, pagesData); // 初始化桌面视图
     desktopView.init();
   });
 });
@@ -161,10 +161,11 @@ function resolvePagesData(deskLayout, localSortInfo, handledIcons) {
   //  },
   // ...
   // }
+  let sortInfo = localSortInfo;
   const handledIconsKeys = Object.keys(handledIcons);
 
   // 如果本地没有页面信息, 自行计算
-  if (localSortInfo.length === 0) {
+  if (sortInfo.length === 0) {
     // 计算页面数量
     const pageCount = Math.ceil(
       handledIconsKeys.length / (deskLayout.row * deskLayout.column)
@@ -174,33 +175,57 @@ function resolvePagesData(deskLayout, localSortInfo, handledIcons) {
       let page = [];
       for (let j = 0; j < deskLayout.row * deskLayout.column; j++) {
         if (handledIconsKeys[j]) {
-          page.push(handledIconsKeys[j + i * deskLayout.row * deskLayout.column]);
+          page.push(
+            handledIconsKeys[j + i * deskLayout.row * deskLayout.column]
+          );
         }
       }
-      localSortInfo.push(page);
+      sortInfo.push(page);
     }
-    console.log("没有本地数据时, localSortInfo:", localSortInfo);
+    console.log("没有本地数据时, sortInfo:", sortInfo);
   }
 
   // 处理页面信息
-  const pagesData = [];
+  let iconsData = [];
+  // 已删除的图标
+  // let deletedIcons = [];
+  // 新增的图标
+  let newIcons = [];
   // 根据 loalPages 的信息，将图标信息分配到不同的页面中，并排序
-  for (let i = 0; i < localSortInfo.length; i++) {
+  for (let i = 0; i < sortInfo.length; i++) {
     const pageIcons = [];
-    localSortInfo[i].forEach((rawName) => {
+    sortInfo[i].forEach((rawName) => {
       if (handledIcons[rawName]) {
         // 如果图标信息中有该图标，则将图标信息添加到页面信息中
         pageIcons.push(handledIcons[rawName]);
         // 删除图标信息中的该图标
         delete handledIcons[rawName];
       }
+      // 如果图标信息中没有该图标，则将该图标添加到已删除的图标中
+      //  const deletedIcon = {
+      //   rawName: rawName,
+      //   iconName: rawName,
+      //   iconImage: "../assets/deleted-96.png",
+      //   id: Math.random().toString(36).slice(-8),
+      //   searchKeywords: [],
+      //   type: "deleted",
+      //   suffix: "",
+      //   realPath: "",
+      // };
     });
     // 将页面信息添加到页面数据中
-    pagesData.push(pageIcons);
+    iconsData.push(pageIcons);
   }
+  // 删除的图标
+  // console.log("删除的图标:", deletedIcons);
+  // 将剩余的图标设为新图标
+  // console.log("剩余的图标:", handledIcons);
+  newIcons = Object.values(handledIcons);
+  console.log("新增的图标:", newIcons);
   return {
-    sortInfo: localSortInfo,
-    iconsData: pagesData,
+    sortInfo: sortInfo,
+    iconsData: iconsData,
+    // deletedIcons: deletedIcons,
+    newIcons: newIcons,
   };
 }
-
